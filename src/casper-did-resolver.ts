@@ -35,9 +35,6 @@ export class CasperDidResolver extends Resolver {
         key += didUrl;
 
         const result = await clientRpc.getBlockState(stateRootHash, contractHash, [key]);
-        console.log("attribute result:");
-        console.log(result.CLValue!.data[0]);
-        console.log(result.CLValue!.data[1]);
         return result as any;
     }
 
