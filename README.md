@@ -1,7 +1,6 @@
 # casper-did-resolver
 Veramo plugin - Casper DID Resolver
 ## How to use
-
 Install all dependencies, such as: Veramo and Casper by adding them to package.json:
 ```json
   "dependencies": {
@@ -14,7 +13,6 @@ Install all dependencies, such as: Veramo and Casper by adding them to package.j
 ```
 
 Create  Veramo agent manager:
-
 ```ts
 const PUBLIC_KEY = Keys.Ed25519.readBase64WithPEM('MCowBQYDK2VwAyEANUSxkqzpKbbhYVMo0bP3nVe+gen4jFp06Ki5u6cIATk=');
 const PRIVATE_KEY = Keys.Ed25519.readBase64WithPEM('MC4CAQAwBQYDK2VwBCIEIAdjynMSLimFalVdB51TI6wGlwQKaI8PwdsG55t2qMZM');
