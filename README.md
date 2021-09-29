@@ -1,5 +1,5 @@
 # casper-did-resolver
-Veramo plugin - Casper DID Resolver
+This project implements Casper DID Resolver plugin for [Veramo](https://veramo.io/)
 ## How to use
 Install all dependencies, such as: Veramo and Casper by adding them to package.json:
 ```json
@@ -11,6 +11,8 @@ Install all dependencies, such as: Veramo and Casper by adding them to package.j
     ...................
   },
 ```
+
+For Veramo basics please follow the documentation and samples [here](https://veramo.io/docs/basics/introduction)
 
 Create  Veramo agent manager:
 ```ts
@@ -35,10 +37,10 @@ const agent = core.createAgent({
 });
 ```
 
-To resove key use following code:
+In order to resove DID please use following code:
 
 ```ts
-const key: string = 'you_key_name';
+const key: string = 'your_did_key_name';
 agent.resolveDid({didUrl: key});
 ```
 
