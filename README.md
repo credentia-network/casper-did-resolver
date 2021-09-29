@@ -18,7 +18,7 @@ Install all dependencies, such as: Veramo and Casper.
 
 Create  Veramo agent manager:
 
-`
+```
 const agent = core.createAgent({
     plugins: [
         new did_resolver.DIDResolverPlugin({
@@ -30,11 +30,11 @@ const agent = core.createAgent({
         }),
     ],
 });
-`
+```
 
 To resove key use following code:
 
-`
+```
 const key: string = 'you_key_name';
 agent.resolveDid({didUrl: key});
-`
+```
