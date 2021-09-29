@@ -6,7 +6,7 @@ Veramo plugin - Casper DID Resolver
 npm run build
 ```
 
-## Test
+## Test/Demo
 
 ```
 npm run test
@@ -14,7 +14,10 @@ npm run test
 
 ## How to use
 
-Install all dependencies, such as: Veramo and Casper.
+Install all dependencies, such as: Veramo and Casper:
+```
+npm install @veramo/core @veramo/did-resolver casper-js-sdk
+```
 
 Create  Veramo agent manager:
 
