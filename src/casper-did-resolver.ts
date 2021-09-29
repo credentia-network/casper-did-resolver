@@ -4,7 +4,6 @@ import { AsymmetricKey } from "casper-js-sdk/dist/lib/Keys";
 import { DIDResolutionOptions, Resolver } from "did-resolver";
 
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
-    identityKey: AsymmetricKey;
     rpcUrl: string;
     contractKey: AsymmetricKey;
     contract: string;

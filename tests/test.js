@@ -8,24 +8,20 @@ const contractKey = casper_js_sdk.Keys.Ed25519.parseKeyFiles(
     './network_keys/ippolit/IppolitWallet_secret_key.pem'
 );
 
-const identityKey = casper_js_sdk.Keys.Ed25519.parseKeyFiles(
-    './network_keys/ippolit/IppolitWallet_public_key.pem',
-    './network_keys/ippolit/IppolitWallet_secret_key.pem'
-);
-
 const agent = core.createAgent({
     plugins: [
         new did_resolver.DIDResolverPlugin({
             resolver: new identifier_resolver.CasperDidResolver({
                 contract: 'CasperDIDRegistry9',
                 contractKey,
-                identityKey,
-                rpcUrl: 'http://164.90.198.193:7777/rpc'
+                rpcUrl: 'http://144.76.97.151:7777/rpc'
             }),
         }),
     ],
 });
 
+const key = 'asd';
+
 agent.resolveDid({
-    didUrl: "asd"
+    didUrl: key
 }).then(result => console.log(result));
