@@ -21,7 +21,6 @@ const PRIVATE_KEY = Keys.Ed25519.readBase64WithPEM('MC4CAQAwBQYDK2VwBCIEIAdjynMS
 const RPC_URL = '<CASPER_NODE_RPC_URL>';
 const CONTRACT = 'CasperDIDRegistry9';
 
-const contractKey = Keys.Ed25519.parseKeyPair(PUBLIC_KEY, PRIVATE_KEY);
 const identityKey = Keys.Ed25519.parseKeyPair(PUBLIC_KEY, PRIVATE_KEY);
 
 const agent = core.createAgent({
@@ -29,7 +28,6 @@ const agent = core.createAgent({
         new did_resolver.DIDResolverPlugin({
             resolver: new identifier_resolver.CasperDidResolver({
                 contract: 'CONTRACT',
-                contractKey,
                 rpcUrl: RPC_URL
             }),
         }),
@@ -40,7 +38,7 @@ const agent = core.createAgent({
 In order to resove DID please use following code:
 
 ```ts
-const key: string = 'your_did_key_name';
+const key: string = 'your_did_key_hash';
 agent.resolveDid({didUrl: key});
 ```
 
