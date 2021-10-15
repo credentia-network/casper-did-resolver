@@ -42,6 +42,12 @@ const key: string = 'your_did_key_hash';
 agent.resolveDid({didUrl: key});
 ```
 
+To get hash in hex use following example:
+
+```ts
+const didHash = Buffer.from(identityKey.accountHash()).toString('hex');
+```
+
 Casper public blockchain nodes RPC can be found here:
  - For Testnet: [https://testnet.cspr.live/tools/peers](https://testnet.cspr.live/tools/peers)
  - For Mainnet: [https://cspr.live/tools/peers](https://cspr.live/tools/peers)
