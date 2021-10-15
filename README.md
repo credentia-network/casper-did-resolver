@@ -42,7 +42,7 @@ const key: string = 'your_did_key_hash';
 agent.resolveDid({didUrl: key});
 ```
 
-To get hash in hex use following example:
+To get hash as HEX string use following example:
 
 ```ts
 const didHash = Buffer.from(identityKey.accountHash()).toString('hex');
