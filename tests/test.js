@@ -1,27 +1,21 @@
 const identifier_resolver = require("./../lib");
 const core = require("@veramo/core");
 const did_resolver = require("@veramo/did-resolver");
-const casper_js_sdk = require("casper-js-sdk");
-
-const contractKey = casper_js_sdk.Keys.Ed25519.parseKeyFiles(
-    './network_keys/ippolit/IppolitWallet_public_key.pem',
-    './network_keys/ippolit/IppolitWallet_secret_key.pem'
-);
 
 const agent = core.createAgent({
     plugins: [
         new did_resolver.DIDResolverPlugin({
             resolver: new identifier_resolver.CasperDidResolver({
                 contract: 'CasperDIDRegistry9',
-                contractKey,
-                rpcUrl: 'http://144.76.97.151:7777/rpc'
+                rpcUrl: 'http://159.65.118.250:7777/rpc'
             }),
         }),
     ],
 });
 
-const key = 'asd';
+const didHashHex = '7ac5a7bd9b9e7370085c60429969f512cdad2e74e9728af23afe20fdaf0c67a9';
 
 agent.resolveDid({
-    didUrl: key
+    didUrl: didHashHex,
+    options: { accept: 'some_attribute_type'} // Optional
 }).then(result => console.log(result));

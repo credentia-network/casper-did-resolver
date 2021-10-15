@@ -10,6 +10,4 @@ export declare class CasperDidResolver extends Resolver {
     private resolverOptions?;
     constructor(resolverOptions?: CasperDidResolverOptions);
     resolve(didUrl: string, options?: DIDResolutionOptions): Promise<DIDResolutionResult>;
-    private getAccountInfo;
-    private getAccountNamedKeyValue;
 }

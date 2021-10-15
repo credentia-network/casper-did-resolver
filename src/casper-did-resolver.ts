@@ -3,6 +3,8 @@ import { CasperServiceByJsonRPC } from "casper-js-sdk";
 import { AsymmetricKey } from "casper-js-sdk/dist/lib/Keys";
 import { DIDResolutionOptions, Resolver } from "did-resolver";
 
+const CONTRACT_DID_HASH = "hash-7ac5a7bd9b9e7370085c60429969f512cdad2e74e9728af23afe20fdaf0c67a9";
+
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
     rpcUrl: string;
     contractKey: AsymmetricKey;
@@ -22,37 +24,15 @@ export class CasperDidResolver extends Resolver {
 
         const clientRpc = new CasperServiceByJsonRPC(options.rpcUrl);
         const blockHashBase16 = '';
-        const stateRootHash = await clientRpc.getStateRootHash(blockHashBase16);
-        const contractHash = await this.getAccountNamedKeyValue(clientRpc, stateRootHash, options.contractKey, options.contract);
-        if (!contractHash) {
-            throw new Error(`Key '${options.contract}' couldn't be found.`);
-        }
+        const stateRootHash = await clientRpc.getStateRootHash(blockHashBase16);              
 
         let key = "attribute_";
-        key += Buffer.from(options.contractKey.accountHash()).toString('hex');
-        key += "_";
         key += didUrl;
-
-        const result = await clientRpc.getBlockState(stateRootHash, contractHash, [key]);
-        return result as any;
-    }
-
-    private async getAccountInfo(client: CasperServiceByJsonRPC, stateRootHash: string, keyPair: AsymmetricKey) {
-        const accountHash = Buffer.from(keyPair.accountHash()).toString('hex');
-        const storedValue = await client.getBlockState(
-            stateRootHash,
-            `account-hash-${accountHash}`,
-            []
-        )
-        return storedValue.Account;
-    };
-
-    private async getAccountNamedKeyValue(client: CasperServiceByJsonRPC, stateRootHash: string, keyPair: AsymmetricKey, namedKey: string) {
-        const accountInfo = await this.getAccountInfo(client, stateRootHash, keyPair);
-        if (!accountInfo) {
-            throw new Error('IdentifierProvider.getAccountInfo returned an undefined result.');
+        if (options?.accept) {
+            key += `_${options.accept}`;
         }
-        const res = accountInfo.namedKeys.find(i => i.name === namedKey);
-        return res!.key;
+
+        const result = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [key]);
+        return result as any;
     }
 }
