@@ -82,7 +82,7 @@ export class CasperDidResolver extends Resolver {
         const publickKey = this.getDidPublickKey(did);
         const code = +publickKey.substr(publickKey.startsWith('0x') ? 2 : 0, 2);
         if (code == 2) {
-            return '';
+            return 'Ed25519VerificationKey2020';
         }
 
         return 'EcdsaSecp256k1RecoveryMethod2020';
