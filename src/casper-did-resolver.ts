@@ -35,7 +35,7 @@ export class CasperDidResolver extends Resolver {
             if (e.code = VALUE_NOT_FOUNT_ERROR_CODE) {
                 const didDocument = this.getDefaultDiDDocument(didUrl);
                 return {
-                    didResolutionMetadata: { error: 'notFound'},
+                    didResolutionMetadata: { contentType: 'application/did+ld+json' },
                     didDocument,
                     didDocumentMetadata: {}
                 };
