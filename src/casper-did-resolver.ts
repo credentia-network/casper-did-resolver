@@ -28,14 +28,8 @@ export class CasperDidResolver extends Resolver {
         const blockHashBase16 = '';
         const stateRootHash = await clientRpc.getStateRootHash(blockHashBase16);
 
-        let key = "attribute_";
-        key += didUrl;
-        if (options?.accept) {
-            key += `_${options.accept}`;
-        }
-
         try {
-            const result = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [key]);
+            const result = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [didUrl]);
             return result as any;
         } catch (e: any) {
             if (e.code = VALUE_NOT_FOUNT_ERROR_CODE) {
@@ -46,7 +40,7 @@ export class CasperDidResolver extends Resolver {
                     didDocumentMetadata: {}
                 };
             }
-            console.error(e);
+            throw e;
         }
     }
 
