@@ -28,20 +28,22 @@ export class CasperDidResolver extends Resolver {
         const blockHashBase16 = '';
         const stateRootHash = await clientRpc.getStateRootHash(blockHashBase16);
 
+        let didDocument = null;
         try {
-            const result = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [didUrl]);
-            return result as any;
+            didDocument = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [didUrl]);
         } catch (e: any) {
             if (e.code = VALUE_NOT_FOUNT_ERROR_CODE) {
-                const didDocument = this.getDefaultDiDDocument(didUrl);
-                return {
-                    didResolutionMetadata: { contentType: 'application/did+ld+json' },
-                    didDocument,
-                    didDocumentMetadata: {}
-                };
+                didDocument = this.getDefaultDiDDocument(didUrl);
+            } else {
+                throw e;
             }
-            throw e;
         }
+
+        return {
+            didResolutionMetadata: { contentType: 'application/did+ld+json' },
+            didDocument,
+            didDocumentMetadata: {}
+        };
     }
 
     private getDefaultDiDDocument(did: string): DIDDocument {
