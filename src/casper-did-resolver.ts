@@ -48,18 +48,18 @@ export class CasperDidResolver extends Resolver {
 
     private getDefaultDiDDocument(did: string): DIDDocument {
         const publickKey = this.getDidPublickKey(did);
-        const type = this.getType(did);
+        const typeCfg = this.getTypeInfo(did);
 
         return {
             '@context': [
                 'https://www.w3.org/ns/did/v1',
-                'https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld',
+                typeCfg.url,
             ],
             id: did,
             verificationMethod: [
                 {
                     id: `${did}#controller`,
-                    type,
+                    type: typeCfg.type,
                     controller: did,
                     blockchainAccountId: `${publickKey}@eip155:4`,
                 },
@@ -74,13 +74,19 @@ export class CasperDidResolver extends Resolver {
         return data[data.length - 1];
     }
 
-    private getType(did: string): string {
+    private getTypeInfo(did: string) {
         const publickKey = this.getDidPublickKey(did);
         const code = +publickKey.substr(publickKey.startsWith('0x') ? 2 : 0, 2);
         if (code == 2) {
-            return 'Ed25519VerificationKey2020';
+            return {
+                type: 'Ed25519VerificationKey2018',
+                url: 'https://digitalbazaar.github.io/ed25519-signature-2018-context/contexts/ed25519-signature-2018-v1.jsonld'
+            };
         }
 
-        return 'EcdsaSecp256k1RecoveryMethod2020';
+        return {
+            type: 'EcdsaSecp256k1RecoveryMethod2020',
+            url: 'https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld'
+        };
     }
 }
