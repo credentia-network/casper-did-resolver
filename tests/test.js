@@ -2,12 +2,13 @@ const identifier_resolver = require("./../lib");
 const core = require("@veramo/core");
 const did_resolver = require("@veramo/did-resolver");
 const Keys = require("casper-js-sdk");
+const CONTRACT_DID_HASH = "hash-2fe97b396d1e362c8fd796eab6f6d57814476ed199a5daab0b7afa5023a84429"
 
 const agent = core.createAgent({
     plugins: [
         new did_resolver.DIDResolverPlugin({
             resolver: new identifier_resolver.CasperDidResolver({
-                contract: 'CasperDIDRegistry9',
+                contract: CONTRACT_DID_HASH,
                 rpcUrl: 'http://159.65.118.250:7777/rpc'
             }),
         }),

@@ -2,8 +2,6 @@ import { DIDResolutionResult } from "@veramo/core";
 import { CasperServiceByJsonRPC, decodeBase16, Keys } from "casper-js-sdk";
 import { DIDDocument, DIDResolutionOptions, Resolver } from "did-resolver";
 
-const CONTRACT_DID_HASH = "hash-2fe97b396d1e362c8fd796eab6f6d57814476ed199a5daab0b7afa5023a84429";
-
 const VALUE_NOT_FOUNT_ERROR_CODE = -32003;
 
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
@@ -24,12 +22,13 @@ export class CasperDidResolver extends Resolver {
         };
 
         const clientRpc = new CasperServiceByJsonRPC(options.rpcUrl);
+        const contractDIDHash = options.contract;
         const blockHashBase16 = '';
         const stateRootHash = await clientRpc.getStateRootHash(blockHashBase16);
 
-        const didDocument = await this.readDidDocument(didUrl, clientRpc, stateRootHash);
-        await this.readDelegates(didDocument, didUrl, clientRpc, stateRootHash);
-        await this.readAttributes(didDocument, didUrl, clientRpc, stateRootHash);
+        const didDocument = await this.readDidDocument(didUrl, clientRpc, contractDIDHash, stateRootHash);
+        await this.readDelegates(didDocument, didUrl, clientRpc, contractDIDHash, stateRootHash);
+        await this.readAttributes(didDocument, didUrl, clientRpc, contractDIDHash, stateRootHash);
 
         return {
             didResolutionMetadata: { contentType: 'application/did+ld+json' },
@@ -87,15 +86,15 @@ export class CasperDidResolver extends Resolver {
         return `${Buffer.from(key).toString('hex')}${suffix || ''}`;
     }
 
-    private async readKey<T>(key: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string): Promise<T> {
-        let result = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [key]);
+    private async readKey<T>(key: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string): Promise<T> {
+        let result = await clientRpc.getBlockState(stateRootHash, contractDIDHash, [key]);
         return result?.CLValue?.data;
     }
 
-    private async readDidDocument(didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string): Promise<any> {
+    private async readDidDocument(didUrl: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string): Promise<any> {
         try {
             const key = this.buildKey(didUrl);
-            return await this.readKey(key, clientRpc, stateRootHash);
+            return await this.readKey(key, clientRpc, contractDIDHash, stateRootHash);
         } catch (e: any) {
             if (e.code = VALUE_NOT_FOUNT_ERROR_CODE) {
                 //console.warn(e);
@@ -106,15 +105,15 @@ export class CasperDidResolver extends Resolver {
         }
     }
 
-    private async readDelegates(didDocument: any, didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string) {
-        const deletagesLength = await this.readDeligateLength(didUrl, clientRpc, stateRootHash);
+    private async readDelegates(didDocument: any, didUrl: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string) {
+        const deletagesLength = await this.readDeligateLength(didUrl, clientRpc, contractDIDHash, stateRootHash);
 
         if (deletagesLength) {
             const arr = new Array(deletagesLength).fill(0).map((_, i) => i);
             const nowTimestamp = new Date().valueOf();
             for (const index of arr) {
                 const key = this.buildKey(didUrl, `_delegate_${index}`);
-                const result = await this.readKey<any[]>(key, clientRpc, stateRootHash);
+                const result = await this.readKey<any[]>(key, clientRpc, contractDIDHash, stateRootHash);
 
                 const [name, value, expirationTimestamp] = result.map(t => t.data.toString());
                 if (+expirationTimestamp > nowTimestamp) {
@@ -134,10 +133,10 @@ export class CasperDidResolver extends Resolver {
         }
     }
 
-    private async readDeligateLength(didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string): Promise<number> {
+    private async readDeligateLength(didUrl: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string): Promise<number> {
         const key = this.buildKey(didUrl, '_delegateLength');
         try {
-            let result = await this.readKey(key, clientRpc, stateRootHash);
+            let result = await this.readKey(key, clientRpc, contractDIDHash, stateRootHash);
             return +result || 0;
         } catch (e) {
             console.log(e);
@@ -145,15 +144,15 @@ export class CasperDidResolver extends Resolver {
         }
     }
 
-    private async readAttributes(didDocument: any, didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string) {
-        const attributesLength = await this.readAttributesLength(didUrl, clientRpc, stateRootHash);
+    private async readAttributes(didDocument: any, didUrl: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string) {
+        const attributesLength = await this.readAttributesLength(didUrl, clientRpc, contractDIDHash, stateRootHash);
 
         if (attributesLength) {
             const arr = new Array(attributesLength).fill(0).map((_, i) => i);
             const nowTimestamp = new Date().valueOf();
             for (const index of arr) {
                 const key = this.buildKey(didUrl, `_attribute_${index}`);
-                const result = await this.readKey<any[]>(key, clientRpc, stateRootHash);
+                const result = await this.readKey<any[]>(key, clientRpc, contractDIDHash, stateRootHash);
 
                 const [name, value, expirationTimestamp] = result.map(t => t.data.toString());
                 if (+expirationTimestamp > nowTimestamp) {
@@ -183,10 +182,10 @@ export class CasperDidResolver extends Resolver {
         }
     }
 
-    private async readAttributesLength(didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string) {
+    private async readAttributesLength(didUrl: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string) {
         const key = this.buildKey(didUrl, '_attributeLength');
         try {
-            let result = await this.readKey(key, clientRpc, stateRootHash);
+            let result = await this.readKey(key, clientRpc, contractDIDHash, stateRootHash);
             return +result || 0;
         } catch (e) {
             console.log(e);
