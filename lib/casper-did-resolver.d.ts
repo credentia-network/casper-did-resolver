@@ -1,9 +1,9 @@
 import { DIDResolutionResult } from "@veramo/core";
-import { AsymmetricKey } from "casper-js-sdk/dist/lib/Keys";
+import { Keys } from "casper-js-sdk";
 import { DIDResolutionOptions, Resolver } from "did-resolver";
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
     rpcUrl: string;
-    contractKey: AsymmetricKey;
+    contractKey: Keys.AsymmetricKey;
     contract: string;
 }
 export declare class CasperDidResolver extends Resolver {
@@ -12,5 +12,12 @@ export declare class CasperDidResolver extends Resolver {
     resolve(didUrl: string, options?: DIDResolutionOptions): Promise<DIDResolutionResult>;
     private getDefaultDiDDocument;
     private getDidPublickKey;
-    private getType;
+    private getTypeInfo;
+    private buildKey;
+    private readKey;
+    private readDidDocument;
+    private readDelegates;
+    private readDeligateLength;
+    private readAttributes;
+    private readAttributesLength;
 }

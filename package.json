@@ -6,7 +6,8 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "rimraf -rf lib && tsc",
-    "test": "node tests/test.js"
+    "test": "node tests/test.js",
+    "key-test": "node tests/key_test.js"
   },
   "license": "MIT",
   "devDependencies": {

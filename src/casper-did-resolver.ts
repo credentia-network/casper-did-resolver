@@ -1,15 +1,14 @@
 import { DIDResolutionResult } from "@veramo/core";
-import { CasperServiceByJsonRPC } from "casper-js-sdk";
-import { AsymmetricKey } from "casper-js-sdk/dist/lib/Keys";
+import { CasperServiceByJsonRPC, decodeBase16, Keys } from "casper-js-sdk";
 import { DIDDocument, DIDResolutionOptions, Resolver } from "did-resolver";
 
-const CONTRACT_DID_HASH = "hash-7ac5a7bd9b9e7370085c60429969f512cdad2e74e9728af23afe20fdaf0c67a9";
+const CONTRACT_DID_HASH = "hash-2fe97b396d1e362c8fd796eab6f6d57814476ed199a5daab0b7afa5023a84429";
 
 const VALUE_NOT_FOUNT_ERROR_CODE = -32003;
 
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
     rpcUrl: string;
-    contractKey: AsymmetricKey;
+    contractKey: Keys.AsymmetricKey;
     contract: string;
 }
 
@@ -28,16 +27,9 @@ export class CasperDidResolver extends Resolver {
         const blockHashBase16 = '';
         const stateRootHash = await clientRpc.getStateRootHash(blockHashBase16);
 
-        let didDocument = null;
-        try {
-            didDocument = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [didUrl]);
-        } catch (e: any) {
-            if (e.code = VALUE_NOT_FOUNT_ERROR_CODE) {
-                didDocument = this.getDefaultDiDDocument(didUrl);
-            } else {
-                throw e;
-            }
-        }
+        const didDocument = await this.readDidDocument(didUrl, clientRpc, stateRootHash);
+        await this.readDelegates(didDocument, didUrl, clientRpc, stateRootHash);
+        await this.readAttributes(didDocument, didUrl, clientRpc, stateRootHash);
 
         return {
             didResolutionMetadata: { contentType: 'application/did+ld+json' },
@@ -88,5 +80,117 @@ export class CasperDidResolver extends Resolver {
             type: 'EcdsaSecp256k1RecoveryMethod2020',
             url: 'https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld'
         };
+    }
+
+    private buildKey(didUrl: string, suffix?: string) {
+        const key = Keys.Ed25519.accountHash(decodeBase16(didUrl));
+        return `${Buffer.from(key).toString('hex')}${suffix || ''}`;
+    }
+
+    private async readKey<T>(key: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string): Promise<T> {
+        let result = await clientRpc.getBlockState(stateRootHash, CONTRACT_DID_HASH, [key]);
+        return result?.CLValue?.data;
+    }
+
+    private async readDidDocument(didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string): Promise<any> {
+        try {
+            const key = this.buildKey(didUrl);
+            return await this.readKey(key, clientRpc, stateRootHash);
+        } catch (e: any) {
+            if (e.code = VALUE_NOT_FOUNT_ERROR_CODE) {
+                //console.warn(e);
+                return this.getDefaultDiDDocument(didUrl);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private async readDelegates(didDocument: any, didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string) {
+        const deletagesLength = await this.readDeligateLength(didUrl, clientRpc, stateRootHash);
+
+        if (deletagesLength) {
+            const arr = new Array(deletagesLength).fill(0).map((_, i) => i);
+            const nowTimestamp = new Date().valueOf();
+            for (const index of arr) {
+                const key = this.buildKey(didUrl, `_delegate_${index}`);
+                const result = await this.readKey<any[]>(key, clientRpc, stateRootHash);
+
+                const [name, value, expirationTimestamp] = result.map(t => t.data.toString());
+                if (+expirationTimestamp > nowTimestamp) {
+                    const id = `${didUrl}#delegate-${index}`
+                    didDocument.verificationMethod.push({
+                        id,
+                        type: name,
+                        controller: didDocument.id,
+                        publicKeyHex: value
+                    });
+
+                    if (name == 'sigAuth') {
+                        didDocument.authentication.push(id);
+                    }
+                }
+            }
+        }
+    }
+
+    private async readDeligateLength(didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string): Promise<number> {
+        const key = this.buildKey(didUrl, '_delegateLength');
+        try {
+            let result = await this.readKey(key, clientRpc, stateRootHash);
+            return +result || 0;
+        } catch (e) {
+            console.log(e);
+            return 0;
+        }
+    }
+
+    private async readAttributes(didDocument: any, didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string) {
+        const attributesLength = await this.readAttributesLength(didUrl, clientRpc, stateRootHash);
+
+        if (attributesLength) {
+            const arr = new Array(attributesLength).fill(0).map((_, i) => i);
+            const nowTimestamp = new Date().valueOf();
+            for (const index of arr) {
+                const key = this.buildKey(didUrl, `_attribute_${index}`);
+                const result = await this.readKey<any[]>(key, clientRpc, stateRootHash);
+
+                const [name, value, expirationTimestamp] = result.map(t => t.data.toString());
+                if (+expirationTimestamp > nowTimestamp) {
+                    let attribute = null;
+                    if (name.startsWith('did/svc/')) {
+                        const nameArr = name.split('/');
+                        attribute = {
+                            id: `${didDocument.id}#service-${index}`,
+                            type: nameArr[nameArr.length - 1],
+                            serviceEndpoint: value
+                        };
+                    } else if (name.startsWith('did/pub/')) {
+                        const nameArr = name.split('/');
+                        attribute = {
+                            id: `${didDocument.id}#controller-${index}`,
+                            type: nameArr[2] == 'Ed25519' ? 'Ed25519VerificationKey2018' : nameArr[2],
+                            controller: didDocument.id,
+                            publicKeyHex: value
+                        };
+                    }
+
+                    if (!!attribute) {
+                        didDocument.verificationMethod.push(attribute);
+                    }
+                }
+            }
+        }
+    }
+
+    private async readAttributesLength(didUrl: string, clientRpc: CasperServiceByJsonRPC, stateRootHash: string) {
+        const key = this.buildKey(didUrl, '_attributeLength');
+        try {
+            let result = await this.readKey(key, clientRpc, stateRootHash);
+            return +result || 0;
+        } catch (e) {
+            console.log(e);
+            return 0;
+        }
     }
 }
