@@ -10,8 +10,8 @@ export declare class CasperDidResolver extends Resolver {
     private resolverOptions?;
     constructor(resolverOptions?: CasperDidResolverOptions);
     resolve(didUrl: string, options?: DIDResolutionOptions): Promise<DIDResolutionResult>;
+    private resolvePublickKey;
     private getDefaultDiDDocument;
-    private getDidPublickKey;
     private getTypeInfo;
     private buildKey;
     private readKey;
