@@ -55,11 +55,13 @@ export class CasperDidResolver extends Resolver {
             if (didUrl.length >= 66) {
                 const type = +didUrl.substr(didUrl.length - 66, 2);
 
-                return {
-                    type,
-                    url: didUrl,
-                    publicKeyHex
-                };
+                if (type) {
+                    return {
+                        type,
+                        url: didUrl,
+                        publicKeyHex
+                    };
+                }
             }
 
             return { type: 1, url: didUrl, publicKeyHex };
