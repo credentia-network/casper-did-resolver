@@ -6,7 +6,6 @@ const VALUE_NOT_FOUNT_ERROR_CODE = -32003;
 
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
     rpcUrl: string;
-    contractKey: Keys.AsymmetricKey;
     contract: string;
 }
 
@@ -181,7 +180,7 @@ export class CasperDidResolver extends Resolver {
             const arr = new Array(attributesLength).fill(0).map((_, i) => i);
             const nowTimestamp = new Date().valueOf();
             for (const index of arr) {
-                const key = this.buildKey(didDocument.id, `_attribute_${index}`);
+                const key = this.buildKey(didDocument.id, `_attribute_${index}`);                
                 const result = await this.readKey<any[]>(key, clientRpc, contractDIDHash, stateRootHash);
 
                 const [name, value, expirationTimestamp] = result.map(t => t.data.toString());
@@ -218,6 +217,7 @@ export class CasperDidResolver extends Resolver {
 
     private async readAttributesLength(id: string, clientRpc: CasperServiceByJsonRPC, contractDIDHash: string, stateRootHash: string) {
         const key = this.buildKey(id, '_attributeLength');
+        console.log(key);
         try {
             let result = await this.readKey(key, clientRpc, contractDIDHash, stateRootHash);
             return +result || 0;

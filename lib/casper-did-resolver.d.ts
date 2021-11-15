@@ -1,9 +1,7 @@
 import { DIDResolutionResult } from "@veramo/core";
-import { Keys } from "casper-js-sdk";
 import { DIDResolutionOptions, Resolver } from "did-resolver";
 export interface CasperDidResolverOptions extends DIDResolutionOptions {
     rpcUrl: string;
-    contractKey: Keys.AsymmetricKey;
     contract: string;
 }
 export declare class CasperDidResolver extends Resolver {
