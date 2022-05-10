@@ -2,7 +2,7 @@
 
 This project implements Casper DID Resolver plugin for [Veramo](https://veramo.io/)
 
-Resolver is designed according to the [Casper DID Method Specification](https://github.com/credentia-network/Docs/blob/main/Casper-did-method-spec.md)
+Resolver is designed according to the [Casper DID Method Specification](https://github.com/credentia-network/Docs/blob/main/readme/Casper-did-method-spec.md)
 
 Initial project structure is derived from [Veramo did-resolver](https://github.com/uport-project/veramo/tree/next/packages/did-resolver)
 
